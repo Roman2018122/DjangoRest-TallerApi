@@ -1,0 +1,4204 @@
+openapi: 3.0.3
+info:
+  title: API REST - Taller Mecánico
+  version: 1.0.0
+  description: API para gestionar clientes, vehículos, citas, órdenes de trabajo,
+    diagnósticos, servicios, seguimiento e historial de mantenimiento.
+paths:
+  /api/citas/:
+    get:
+      operationId: citas_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - citas
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCitaList'
+          description: ''
+    post:
+      operationId: citas_create
+      tags:
+      - citas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cita'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Cita'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Cita'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cita'
+          description: ''
+  /api/citas/{id}/:
+    get:
+      operationId: citas_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - citas
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cita'
+          description: ''
+    put:
+      operationId: citas_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - citas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cita'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Cita'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Cita'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cita'
+          description: ''
+    patch:
+      operationId: citas_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - citas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCita'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCita'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCita'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cita'
+          description: ''
+    delete:
+      operationId: citas_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - citas
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/clientes/:
+    get:
+      operationId: clientes_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - clientes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedClienteList'
+          description: ''
+    post:
+      operationId: clientes_create
+      tags:
+      - clientes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cliente'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Cliente'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Cliente'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cliente'
+          description: ''
+  /api/clientes/{id}/:
+    get:
+      operationId: clientes_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este cliente.
+        required: true
+      tags:
+      - clientes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cliente'
+          description: ''
+    put:
+      operationId: clientes_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este cliente.
+        required: true
+      tags:
+      - clientes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Cliente'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Cliente'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Cliente'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cliente'
+          description: ''
+    patch:
+      operationId: clientes_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este cliente.
+        required: true
+      tags:
+      - clientes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCliente'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCliente'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCliente'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cliente'
+          description: ''
+    delete:
+      operationId: clientes_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este cliente.
+        required: true
+      tags:
+      - clientes
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/detalles-servicios/:
+    get:
+      operationId: detalles_servicios_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - detalles-servicios
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDetalleServicioOrdenList'
+          description: ''
+    post:
+      operationId: detalles_servicios_create
+      tags:
+      - detalles-servicios
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DetalleServicioOrden'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DetalleServicioOrden'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DetalleServicioOrden'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetalleServicioOrden'
+          description: ''
+  /api/detalles-servicios/{id}/:
+    get:
+      operationId: detalles_servicios_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Detalle de servicio
+          de orden.
+        required: true
+      tags:
+      - detalles-servicios
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetalleServicioOrden'
+          description: ''
+    put:
+      operationId: detalles_servicios_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Detalle de servicio
+          de orden.
+        required: true
+      tags:
+      - detalles-servicios
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DetalleServicioOrden'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DetalleServicioOrden'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DetalleServicioOrden'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetalleServicioOrden'
+          description: ''
+    patch:
+      operationId: detalles_servicios_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Detalle de servicio
+          de orden.
+        required: true
+      tags:
+      - detalles-servicios
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDetalleServicioOrden'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDetalleServicioOrden'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDetalleServicioOrden'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetalleServicioOrden'
+          description: ''
+    delete:
+      operationId: detalles_servicios_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Detalle de servicio
+          de orden.
+        required: true
+      tags:
+      - detalles-servicios
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/diagnosticos/:
+    get:
+      operationId: diagnosticos_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - diagnosticos
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDiagnosticoList'
+          description: ''
+    post:
+      operationId: diagnosticos_create
+      tags:
+      - diagnosticos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Diagnostico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Diagnostico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Diagnostico'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnostico'
+          description: ''
+  /api/diagnosticos/{id}/:
+    get:
+      operationId: diagnosticos_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Diagnóstico.
+        required: true
+      tags:
+      - diagnosticos
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnostico'
+          description: ''
+    put:
+      operationId: diagnosticos_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Diagnóstico.
+        required: true
+      tags:
+      - diagnosticos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Diagnostico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Diagnostico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Diagnostico'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnostico'
+          description: ''
+    patch:
+      operationId: diagnosticos_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Diagnóstico.
+        required: true
+      tags:
+      - diagnosticos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDiagnostico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDiagnostico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDiagnostico'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnostico'
+          description: ''
+    delete:
+      operationId: diagnosticos_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Diagnóstico.
+        required: true
+      tags:
+      - diagnosticos
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/diagnosticos/{id}/responder/:
+    post:
+      operationId: diagnosticos_responder_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Diagnóstico.
+        required: true
+      tags:
+      - diagnosticos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Diagnostico'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Diagnostico'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Diagnostico'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnostico'
+          description: ''
+  /api/empleados/:
+    get:
+      operationId: empleados_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - empleados
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEmpleadoList'
+          description: ''
+    post:
+      operationId: empleados_create
+      tags:
+      - empleados
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empleado'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Empleado'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Empleado'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empleado'
+          description: ''
+  /api/empleados/{id}/:
+    get:
+      operationId: empleados_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Empleado.
+        required: true
+      tags:
+      - empleados
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empleado'
+          description: ''
+    put:
+      operationId: empleados_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Empleado.
+        required: true
+      tags:
+      - empleados
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Empleado'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Empleado'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Empleado'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empleado'
+          description: ''
+    patch:
+      operationId: empleados_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Empleado.
+        required: true
+      tags:
+      - empleados
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEmpleado'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEmpleado'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEmpleado'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Empleado'
+          description: ''
+    delete:
+      operationId: empleados_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Empleado.
+        required: true
+      tags:
+      - empleados
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/especialidades/:
+    get:
+      operationId: especialidades_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - especialidades
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEspecialidadList'
+          description: ''
+    post:
+      operationId: especialidades_create
+      tags:
+      - especialidades
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Especialidad'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Especialidad'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Especialidad'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Especialidad'
+          description: ''
+  /api/especialidades/{id}/:
+    get:
+      operationId: especialidades_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Especialidad.
+        required: true
+      tags:
+      - especialidades
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Especialidad'
+          description: ''
+    put:
+      operationId: especialidades_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Especialidad.
+        required: true
+      tags:
+      - especialidades
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Especialidad'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Especialidad'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Especialidad'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Especialidad'
+          description: ''
+    patch:
+      operationId: especialidades_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Especialidad.
+        required: true
+      tags:
+      - especialidades
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEspecialidad'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEspecialidad'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEspecialidad'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Especialidad'
+          description: ''
+    delete:
+      operationId: especialidades_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Especialidad.
+        required: true
+      tags:
+      - especialidades
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/historial-estados/:
+    get:
+      operationId: historial_estados_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - historial-estados
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHistorialEstadoOrdenList'
+          description: ''
+  /api/historial-estados/{id}/:
+    get:
+      operationId: historial_estados_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - historial-estados
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistorialEstadoOrden'
+          description: ''
+  /api/marcas/:
+    get:
+      operationId: marcas_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - marcas
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMarcaList'
+          description: ''
+    post:
+      operationId: marcas_create
+      tags:
+      - marcas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Marca'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Marca'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Marca'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Marca'
+          description: ''
+  /api/marcas/{id}/:
+    get:
+      operationId: marcas_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este marca.
+        required: true
+      tags:
+      - marcas
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Marca'
+          description: ''
+    put:
+      operationId: marcas_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este marca.
+        required: true
+      tags:
+      - marcas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Marca'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Marca'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Marca'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Marca'
+          description: ''
+    patch:
+      operationId: marcas_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este marca.
+        required: true
+      tags:
+      - marcas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMarca'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMarca'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMarca'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Marca'
+          description: ''
+    delete:
+      operationId: marcas_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este marca.
+        required: true
+      tags:
+      - marcas
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/mi-perfil/:
+    get:
+      operationId: mi_perfil_retrieve
+      tags:
+      - mi-perfil
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCliente'
+          description: ''
+    put:
+      operationId: mi_perfil_update
+      tags:
+      - mi-perfil
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilCliente'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PerfilCliente'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PerfilCliente'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCliente'
+          description: ''
+    patch:
+      operationId: mi_perfil_partial_update
+      tags:
+      - mi-perfil
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPerfilCliente'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPerfilCliente'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPerfilCliente'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerfilCliente'
+          description: ''
+  /api/modelos-vehiculo/:
+    get:
+      operationId: modelos_vehiculo_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - modelos-vehiculo
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedModeloVehiculoList'
+          description: ''
+    post:
+      operationId: modelos_vehiculo_create
+      tags:
+      - modelos-vehiculo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModeloVehiculo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ModeloVehiculo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ModeloVehiculo'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModeloVehiculo'
+          description: ''
+  /api/modelos-vehiculo/{id}/:
+    get:
+      operationId: modelos_vehiculo_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este modelo vehiculo.
+        required: true
+      tags:
+      - modelos-vehiculo
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModeloVehiculo'
+          description: ''
+    put:
+      operationId: modelos_vehiculo_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este modelo vehiculo.
+        required: true
+      tags:
+      - modelos-vehiculo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModeloVehiculo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ModeloVehiculo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ModeloVehiculo'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModeloVehiculo'
+          description: ''
+    patch:
+      operationId: modelos_vehiculo_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este modelo vehiculo.
+        required: true
+      tags:
+      - modelos-vehiculo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedModeloVehiculo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedModeloVehiculo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedModeloVehiculo'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModeloVehiculo'
+          description: ''
+    delete:
+      operationId: modelos_vehiculo_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este modelo vehiculo.
+        required: true
+      tags:
+      - modelos-vehiculo
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/ordenes-trabajo/:
+    get:
+      operationId: ordenes_trabajo_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - ordenes-trabajo
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrdenTrabajoList'
+          description: ''
+    post:
+      operationId: ordenes_trabajo_create
+      tags:
+      - ordenes-trabajo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrdenTrabajo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrdenTrabajo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrdenTrabajo'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdenTrabajo'
+          description: ''
+  /api/ordenes-trabajo/{id}/:
+    get:
+      operationId: ordenes_trabajo_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Orden de trabajo.
+        required: true
+      tags:
+      - ordenes-trabajo
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdenTrabajo'
+          description: ''
+    put:
+      operationId: ordenes_trabajo_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Orden de trabajo.
+        required: true
+      tags:
+      - ordenes-trabajo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrdenTrabajo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrdenTrabajo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrdenTrabajo'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdenTrabajo'
+          description: ''
+    patch:
+      operationId: ordenes_trabajo_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Orden de trabajo.
+        required: true
+      tags:
+      - ordenes-trabajo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOrdenTrabajo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOrdenTrabajo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOrdenTrabajo'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdenTrabajo'
+          description: ''
+    delete:
+      operationId: ordenes_trabajo_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Orden de trabajo.
+        required: true
+      tags:
+      - ordenes-trabajo
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/ordenes-trabajo/{id}/seguimiento/:
+    get:
+      operationId: ordenes_trabajo_seguimiento_retrieve
+      description: |-
+        Devuelve el seguimiento completo de una reparación.
+
+        El cliente solo puede acceder a órdenes de sus propios vehículos
+        porque get_object() utiliza el queryset filtrado del ViewSet.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Orden de trabajo.
+        required: true
+      tags:
+      - ordenes-trabajo
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrdenTrabajo'
+          description: ''
+  /api/recomendaciones-mantenimiento/:
+    get:
+      operationId: recomendaciones_mantenimiento_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - recomendaciones-mantenimiento
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRecomendacionMantenimientoList'
+          description: ''
+    post:
+      operationId: recomendaciones_mantenimiento_create
+      tags:
+      - recomendaciones-mantenimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecomendacionMantenimiento'
+          description: ''
+  /api/recomendaciones-mantenimiento/{id}/:
+    get:
+      operationId: recomendaciones_mantenimiento_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Recomendación de
+          mantenimiento.
+        required: true
+      tags:
+      - recomendaciones-mantenimiento
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecomendacionMantenimiento'
+          description: ''
+    put:
+      operationId: recomendaciones_mantenimiento_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Recomendación de
+          mantenimiento.
+        required: true
+      tags:
+      - recomendaciones-mantenimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecomendacionMantenimiento'
+          description: ''
+    patch:
+      operationId: recomendaciones_mantenimiento_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Recomendación de
+          mantenimiento.
+        required: true
+      tags:
+      - recomendaciones-mantenimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRecomendacionMantenimiento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRecomendacionMantenimiento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRecomendacionMantenimiento'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecomendacionMantenimiento'
+          description: ''
+    delete:
+      operationId: recomendaciones_mantenimiento_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Recomendación de
+          mantenimiento.
+        required: true
+      tags:
+      - recomendaciones-mantenimiento
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/recomendaciones-mantenimiento/{id}/cancelar/:
+    post:
+      operationId: recomendaciones_mantenimiento_cancelar_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Recomendación de
+          mantenimiento.
+        required: true
+      tags:
+      - recomendaciones-mantenimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecomendacionMantenimiento'
+          description: ''
+  /api/recomendaciones-mantenimiento/{id}/completar/:
+    post:
+      operationId: recomendaciones_mantenimiento_completar_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Recomendación de
+          mantenimiento.
+        required: true
+      tags:
+      - recomendaciones-mantenimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecomendacionMantenimiento'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecomendacionMantenimiento'
+          description: ''
+  /api/registro/:
+    post:
+      operationId: registro_create
+      tags:
+      - registro
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroCliente'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegistroCliente'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegistroCliente'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroCliente'
+          description: ''
+  /api/servicios/:
+    get:
+      operationId: servicios_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - servicios
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedServicioList'
+          description: ''
+    post:
+      operationId: servicios_create
+      tags:
+      - servicios
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Servicio'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Servicio'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Servicio'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Servicio'
+          description: ''
+  /api/servicios/{id}/:
+    get:
+      operationId: servicios_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este servicio.
+        required: true
+      tags:
+      - servicios
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Servicio'
+          description: ''
+    put:
+      operationId: servicios_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este servicio.
+        required: true
+      tags:
+      - servicios
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Servicio'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Servicio'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Servicio'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Servicio'
+          description: ''
+    patch:
+      operationId: servicios_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este servicio.
+        required: true
+      tags:
+      - servicios
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedServicio'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedServicio'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedServicio'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Servicio'
+          description: ''
+    delete:
+      operationId: servicios_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este servicio.
+        required: true
+      tags:
+      - servicios
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/token/:
+    post:
+      operationId: token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/token/refresh/:
+    post:
+      operationId: token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/token/verify/:
+    post:
+      operationId: token_verify_create
+      description: |-
+        Takes a token and indicates if it is valid.  This view provides no
+        information about a token's fitness for a particular use.
+      tags:
+      - token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenVerify'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenVerify'
+          description: ''
+  /api/vehiculos/:
+    get:
+      operationId: vehiculos_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - vehiculos
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVehiculoList'
+          description: ''
+    post:
+      operationId: vehiculos_create
+      tags:
+      - vehiculos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vehiculo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Vehiculo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Vehiculo'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehiculo'
+          description: ''
+  /api/vehiculos/{id}/:
+    get:
+      operationId: vehiculos_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - vehiculos
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehiculo'
+          description: ''
+    put:
+      operationId: vehiculos_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - vehiculos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vehiculo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Vehiculo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Vehiculo'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehiculo'
+          description: ''
+    patch:
+      operationId: vehiculos_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - vehiculos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedVehiculo'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedVehiculo'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedVehiculo'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehiculo'
+          description: ''
+    delete:
+      operationId: vehiculos_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - vehiculos
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/vehiculos/{id}/historial/:
+    get:
+      operationId: vehiculos_historial_retrieve
+      description: |-
+        Devuelve el historial consolidado del vehículo.
+
+        Los clientes solo pueden acceder a vehículos propios porque
+        get_object() utiliza el queryset filtrado del ViewSet.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - vehiculos
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehiculo'
+          description: ''
+components:
+  schemas:
+    CargoEnum:
+      enum:
+      - ADMINISTRADOR
+      - RECEPCIONISTA
+      - MECANICO
+      - SUPERVISOR
+      type: string
+      description: |-
+        * `ADMINISTRADOR` - Administrador
+        * `RECEPCIONISTA` - Recepcionista
+        * `MECANICO` - Mecánico
+        * `SUPERVISOR` - Supervisor
+    Cita:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        cliente:
+          type: integer
+          readOnly: true
+        cliente_nombre:
+          type: string
+          readOnly: true
+        vehiculo:
+          type: integer
+        vehiculo_placa:
+          type: string
+          readOnly: true
+        servicio:
+          type: integer
+          nullable: true
+        servicio_nombre:
+          type: string
+          readOnly: true
+        fecha_solicitada:
+          type: string
+          format: date-time
+        motivo:
+          type: string
+          maxLength: 255
+        observaciones_cliente:
+          type: string
+        respuesta_taller:
+          type: string
+          readOnly: true
+        estado:
+          allOf:
+          - $ref: '#/components/schemas/CitaEstadoEnum'
+          readOnly: true
+        estado_display:
+          type: string
+          readOnly: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actualizado_en
+      - cliente
+      - cliente_nombre
+      - creado_en
+      - estado
+      - estado_display
+      - fecha_solicitada
+      - id
+      - motivo
+      - respuesta_taller
+      - servicio_nombre
+      - vehiculo
+      - vehiculo_placa
+    CitaEstadoEnum:
+      enum:
+      - SOLICITADA
+      - CONFIRMADA
+      - REPROGRAMADA
+      - CANCELADA
+      - ATENDIDA
+      - NO_ASISTIO
+      type: string
+      description: |-
+        * `SOLICITADA` - Solicitada
+        * `CONFIRMADA` - Confirmada
+        * `REPROGRAMADA` - Reprogramada
+        * `CANCELADA` - Cancelada
+        * `ATENDIDA` - Atendida
+        * `NO_ASISTIO` - No asistió
+    Cliente:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          type: integer
+        usuario_detalle:
+          allOf:
+          - $ref: '#/components/schemas/UsuarioResumen'
+          readOnly: true
+        identificacion:
+          type: string
+          nullable: true
+          maxLength: 20
+        telefono:
+          type: string
+          maxLength: 20
+        direccion:
+          type: string
+          maxLength: 255
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actualizado_en
+      - creado_en
+      - id
+      - usuario
+      - usuario_detalle
+    DetalleServicioOrden:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        orden:
+          type: integer
+        orden_numero:
+          type: string
+          readOnly: true
+        vehiculo_placa:
+          type: string
+          readOnly: true
+        servicio:
+          type: integer
+        servicio_nombre:
+          type: string
+          readOnly: true
+        diagnostico:
+          type: integer
+          nullable: true
+        diagnostico_titulo:
+          type: string
+          readOnly: true
+        empleado:
+          type: integer
+          readOnly: true
+          nullable: true
+        empleado_nombre:
+          type: string
+          readOnly: true
+        descripcion:
+          type: string
+        cantidad:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        precio_unitario:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        estado:
+          $ref: '#/components/schemas/DetalleServicioOrdenEstadoEnum'
+        estado_display:
+          type: string
+          readOnly: true
+        visible_cliente:
+          type: boolean
+        fecha_inicio:
+          type: string
+          format: date-time
+          nullable: true
+        fecha_finalizacion:
+          type: string
+          format: date-time
+          nullable: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actualizado_en
+      - creado_en
+      - diagnostico_titulo
+      - empleado
+      - empleado_nombre
+      - estado_display
+      - id
+      - orden
+      - orden_numero
+      - precio_unitario
+      - servicio
+      - servicio_nombre
+      - subtotal
+      - vehiculo_placa
+    DetalleServicioOrdenEstadoEnum:
+      enum:
+      - PROPUESTO
+      - AUTORIZADO
+      - RECHAZADO
+      - EN_PROCESO
+      - COMPLETADO
+      - CANCELADO
+      type: string
+      description: |-
+        * `PROPUESTO` - Propuesto
+        * `AUTORIZADO` - Autorizado
+        * `RECHAZADO` - Rechazado
+        * `EN_PROCESO` - En proceso
+        * `COMPLETADO` - Completado
+        * `CANCELADO` - Cancelado
+    Diagnostico:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        orden:
+          type: integer
+        orden_numero:
+          type: string
+          readOnly: true
+        vehiculo_placa:
+          type: string
+          readOnly: true
+        empleado:
+          type: integer
+          readOnly: true
+        empleado_nombre:
+          type: string
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 150
+        descripcion:
+          type: string
+        gravedad:
+          $ref: '#/components/schemas/GravedadEnum'
+        gravedad_display:
+          type: string
+          readOnly: true
+        requiere_autorizacion:
+          type: boolean
+        estado_respuesta:
+          allOf:
+          - $ref: '#/components/schemas/EstadoRespuestaEnum'
+          readOnly: true
+        estado_respuesta_display:
+          type: string
+          readOnly: true
+        comentario_cliente:
+          type: string
+          readOnly: true
+        fecha_respuesta:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        visible_cliente:
+          type: boolean
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actualizado_en
+      - comentario_cliente
+      - creado_en
+      - descripcion
+      - empleado
+      - empleado_nombre
+      - estado_respuesta
+      - estado_respuesta_display
+      - fecha_respuesta
+      - gravedad_display
+      - id
+      - orden
+      - orden_numero
+      - titulo
+      - vehiculo_placa
+    Empleado:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          type: integer
+        usuario_detalle:
+          allOf:
+          - $ref: '#/components/schemas/UsuarioResumen'
+          readOnly: true
+        nombre_completo:
+          type: string
+          readOnly: true
+        cargo:
+          $ref: '#/components/schemas/CargoEnum'
+        cargo_display:
+          type: string
+          readOnly: true
+        telefono:
+          type: string
+          maxLength: 20
+        fecha_ingreso:
+          type: string
+          format: date
+        especialidades:
+          type: array
+          items:
+            type: integer
+        especialidades_detalle:
+          type: array
+          items:
+            $ref: '#/components/schemas/Especialidad'
+          readOnly: true
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actualizado_en
+      - cargo
+      - cargo_display
+      - creado_en
+      - especialidades_detalle
+      - fecha_ingreso
+      - id
+      - nombre_completo
+      - usuario
+      - usuario_detalle
+    Especialidad:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 80
+        descripcion:
+          type: string
+        activa:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actualizado_en
+      - creado_en
+      - id
+      - nombre
+    EstadoNuevoEnum:
+      enum:
+      - RECIBIDO
+      - EN_REVISION
+      - ESPERANDO_AUTORIZACION
+      - EN_REPARACION
+      - EN_LAVADO
+      - LISTO
+      - ENTREGADO
+      - CANCELADO
+      type: string
+      description: |-
+        * `RECIBIDO` - Recibido
+        * `EN_REVISION` - En revisión
+        * `ESPERANDO_AUTORIZACION` - Esperando autorización
+        * `EN_REPARACION` - En reparación
+        * `EN_LAVADO` - En lavado
+        * `LISTO` - Listo para retirar
+        * `ENTREGADO` - Entregado
+        * `CANCELADO` - Cancelado
+    EstadoRespuestaEnum:
+      enum:
+      - NO_REQUERIDA
+      - PENDIENTE
+      - APROBADO
+      - RECHAZADO
+      type: string
+      description: |-
+        * `NO_REQUERIDA` - No requerida
+        * `PENDIENTE` - Pendiente
+        * `APROBADO` - Aprobado
+        * `RECHAZADO` - Rechazado
+    GravedadEnum:
+      enum:
+      - INFORMATIVO
+      - LEVE
+      - MODERADO
+      - URGENTE
+      type: string
+      description: |-
+        * `INFORMATIVO` - Informativo
+        * `LEVE` - Leve
+        * `MODERADO` - Moderado
+        * `URGENTE` - Urgente
+    HistorialEstadoOrden:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        orden:
+          type: integer
+          readOnly: true
+        estado_anterior:
+          readOnly: true
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/EstadoNuevoEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        estado_anterior_display:
+          type: string
+          readOnly: true
+        estado_nuevo:
+          allOf:
+          - $ref: '#/components/schemas/EstadoNuevoEnum'
+          readOnly: true
+        estado_nuevo_display:
+          type: string
+          readOnly: true
+        titulo:
+          type: string
+          readOnly: true
+        descripcion:
+          type: string
+          readOnly: true
+        visible_cliente:
+          type: boolean
+          readOnly: true
+        empleado:
+          type: integer
+          readOnly: true
+          nullable: true
+        empleado_nombre:
+          type: string
+          readOnly: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - creado_en
+      - descripcion
+      - empleado
+      - empleado_nombre
+      - estado_anterior
+      - estado_anterior_display
+      - estado_nuevo
+      - estado_nuevo_display
+      - id
+      - orden
+      - titulo
+      - visible_cliente
+    Marca:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 80
+        pais_origen:
+          type: string
+          maxLength: 80
+        activa:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - creado_en
+      - id
+      - nombre
+    ModeloVehiculo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        marca:
+          type: integer
+        marca_nombre:
+          type: string
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 100
+        nombre_completo:
+          type: string
+          readOnly: true
+        tipo_vehiculo:
+          $ref: '#/components/schemas/TipoVehiculoEnum'
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - creado_en
+      - id
+      - marca
+      - marca_nombre
+      - nombre
+      - nombre_completo
+    NullEnum:
+      enum:
+      - null
+    OrdenTrabajo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        numero_orden:
+          type: string
+          readOnly: true
+        vehiculo:
+          type: integer
+        vehiculo_placa:
+          type: string
+          readOnly: true
+        cliente_id:
+          type: integer
+          readOnly: true
+        cliente_nombre:
+          type: string
+          readOnly: true
+        cita:
+          type: integer
+          nullable: true
+        empleado_recepciona:
+          type: integer
+        empleado_recepciona_nombre:
+          type: string
+          readOnly: true
+        empleado_responsable:
+          type: integer
+          nullable: true
+        empleado_responsable_nombre:
+          type: string
+          readOnly: true
+        estado:
+          $ref: '#/components/schemas/EstadoNuevoEnum'
+        estado_display:
+          type: string
+          readOnly: true
+        motivo_ingreso:
+          type: string
+          maxLength: 250
+        observaciones_recepcion:
+          type: string
+        kilometraje_ingreso:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        fecha_ingreso:
+          type: string
+          format: date-time
+        fecha_estimada_entrega:
+          type: string
+          format: date
+          nullable: true
+        fecha_entrega:
+          type: string
+          format: date-time
+          nullable: true
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        descuento:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        activo:
+          type: boolean
+        historial_estados:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistorialEstadoOrden'
+          readOnly: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        detalles_servicios:
+          type: array
+          items:
+            $ref: '#/components/schemas/DetalleServicioOrden'
+          readOnly: true
+      required:
+      - actualizado_en
+      - cliente_id
+      - cliente_nombre
+      - creado_en
+      - detalles_servicios
+      - empleado_recepciona
+      - empleado_recepciona_nombre
+      - empleado_responsable_nombre
+      - estado_display
+      - historial_estados
+      - id
+      - kilometraje_ingreso
+      - motivo_ingreso
+      - numero_orden
+      - total
+      - vehiculo
+      - vehiculo_placa
+    PaginatedCitaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cita'
+    PaginatedClienteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cliente'
+    PaginatedDetalleServicioOrdenList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DetalleServicioOrden'
+    PaginatedDiagnosticoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Diagnostico'
+    PaginatedEmpleadoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Empleado'
+    PaginatedEspecialidadList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Especialidad'
+    PaginatedHistorialEstadoOrdenList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistorialEstadoOrden'
+    PaginatedMarcaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Marca'
+    PaginatedModeloVehiculoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModeloVehiculo'
+    PaginatedOrdenTrabajoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrdenTrabajo'
+    PaginatedRecomendacionMantenimientoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecomendacionMantenimiento'
+    PaginatedServicioList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Servicio'
+    PaginatedVehiculoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehiculo'
+    PatchedCita:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        cliente:
+          type: integer
+          readOnly: true
+        cliente_nombre:
+          type: string
+          readOnly: true
+        vehiculo:
+          type: integer
+        vehiculo_placa:
+          type: string
+          readOnly: true
+        servicio:
+          type: integer
+          nullable: true
+        servicio_nombre:
+          type: string
+          readOnly: true
+        fecha_solicitada:
+          type: string
+          format: date-time
+        motivo:
+          type: string
+          maxLength: 255
+        observaciones_cliente:
+          type: string
+        respuesta_taller:
+          type: string
+          readOnly: true
+        estado:
+          allOf:
+          - $ref: '#/components/schemas/CitaEstadoEnum'
+          readOnly: true
+        estado_display:
+          type: string
+          readOnly: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedCliente:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          type: integer
+        usuario_detalle:
+          allOf:
+          - $ref: '#/components/schemas/UsuarioResumen'
+          readOnly: true
+        identificacion:
+          type: string
+          nullable: true
+          maxLength: 20
+        telefono:
+          type: string
+          maxLength: 20
+        direccion:
+          type: string
+          maxLength: 255
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedDetalleServicioOrden:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        orden:
+          type: integer
+        orden_numero:
+          type: string
+          readOnly: true
+        vehiculo_placa:
+          type: string
+          readOnly: true
+        servicio:
+          type: integer
+        servicio_nombre:
+          type: string
+          readOnly: true
+        diagnostico:
+          type: integer
+          nullable: true
+        diagnostico_titulo:
+          type: string
+          readOnly: true
+        empleado:
+          type: integer
+          readOnly: true
+          nullable: true
+        empleado_nombre:
+          type: string
+          readOnly: true
+        descripcion:
+          type: string
+        cantidad:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+        precio_unitario:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        estado:
+          $ref: '#/components/schemas/DetalleServicioOrdenEstadoEnum'
+        estado_display:
+          type: string
+          readOnly: true
+        visible_cliente:
+          type: boolean
+        fecha_inicio:
+          type: string
+          format: date-time
+          nullable: true
+        fecha_finalizacion:
+          type: string
+          format: date-time
+          nullable: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedDiagnostico:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        orden:
+          type: integer
+        orden_numero:
+          type: string
+          readOnly: true
+        vehiculo_placa:
+          type: string
+          readOnly: true
+        empleado:
+          type: integer
+          readOnly: true
+        empleado_nombre:
+          type: string
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 150
+        descripcion:
+          type: string
+        gravedad:
+          $ref: '#/components/schemas/GravedadEnum'
+        gravedad_display:
+          type: string
+          readOnly: true
+        requiere_autorizacion:
+          type: boolean
+        estado_respuesta:
+          allOf:
+          - $ref: '#/components/schemas/EstadoRespuestaEnum'
+          readOnly: true
+        estado_respuesta_display:
+          type: string
+          readOnly: true
+        comentario_cliente:
+          type: string
+          readOnly: true
+        fecha_respuesta:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        visible_cliente:
+          type: boolean
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedEmpleado:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          type: integer
+        usuario_detalle:
+          allOf:
+          - $ref: '#/components/schemas/UsuarioResumen'
+          readOnly: true
+        nombre_completo:
+          type: string
+          readOnly: true
+        cargo:
+          $ref: '#/components/schemas/CargoEnum'
+        cargo_display:
+          type: string
+          readOnly: true
+        telefono:
+          type: string
+          maxLength: 20
+        fecha_ingreso:
+          type: string
+          format: date
+        especialidades:
+          type: array
+          items:
+            type: integer
+        especialidades_detalle:
+          type: array
+          items:
+            $ref: '#/components/schemas/Especialidad'
+          readOnly: true
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedEspecialidad:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 80
+        descripcion:
+          type: string
+        activa:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedMarca:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 80
+        pais_origen:
+          type: string
+          maxLength: 80
+        activa:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedModeloVehiculo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        marca:
+          type: integer
+        marca_nombre:
+          type: string
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 100
+        nombre_completo:
+          type: string
+          readOnly: true
+        tipo_vehiculo:
+          $ref: '#/components/schemas/TipoVehiculoEnum'
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedOrdenTrabajo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        numero_orden:
+          type: string
+          readOnly: true
+        vehiculo:
+          type: integer
+        vehiculo_placa:
+          type: string
+          readOnly: true
+        cliente_id:
+          type: integer
+          readOnly: true
+        cliente_nombre:
+          type: string
+          readOnly: true
+        cita:
+          type: integer
+          nullable: true
+        empleado_recepciona:
+          type: integer
+        empleado_recepciona_nombre:
+          type: string
+          readOnly: true
+        empleado_responsable:
+          type: integer
+          nullable: true
+        empleado_responsable_nombre:
+          type: string
+          readOnly: true
+        estado:
+          $ref: '#/components/schemas/EstadoNuevoEnum'
+        estado_display:
+          type: string
+          readOnly: true
+        motivo_ingreso:
+          type: string
+          maxLength: 250
+        observaciones_recepcion:
+          type: string
+        kilometraje_ingreso:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        fecha_ingreso:
+          type: string
+          format: date-time
+        fecha_estimada_entrega:
+          type: string
+          format: date
+          nullable: true
+        fecha_entrega:
+          type: string
+          format: date-time
+          nullable: true
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        descuento:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        activo:
+          type: boolean
+        historial_estados:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistorialEstadoOrden'
+          readOnly: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        detalles_servicios:
+          type: array
+          items:
+            $ref: '#/components/schemas/DetalleServicioOrden'
+          readOnly: true
+    PatchedPerfilCliente:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          allOf:
+          - $ref: '#/components/schemas/UsuarioResumen'
+          readOnly: true
+        identificacion:
+          type: string
+          nullable: true
+          maxLength: 20
+        telefono:
+          type: string
+          maxLength: 20
+        direccion:
+          type: string
+          maxLength: 255
+        activo:
+          type: boolean
+          readOnly: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedRecomendacionMantenimiento:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        vehiculo:
+          type: integer
+        vehiculo_placa:
+          type: string
+          readOnly: true
+        orden_origen:
+          type: integer
+          nullable: true
+        orden_numero:
+          type: string
+          readOnly: true
+        servicio:
+          type: integer
+          nullable: true
+        servicio_nombre:
+          type: string
+          readOnly: true
+        empleado:
+          type: integer
+          readOnly: true
+          nullable: true
+        empleado_nombre:
+          type: string
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 150
+        descripcion:
+          type: string
+        fecha_recomendada:
+          type: string
+          format: date
+          nullable: true
+        kilometraje_recomendado:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        estado:
+          $ref: '#/components/schemas/RecomendacionMantenimientoEstadoEnum'
+        estado_display:
+          type: string
+          readOnly: true
+        fecha_realizacion:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        visible_cliente:
+          type: boolean
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedServicio:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 120
+        descripcion:
+          type: string
+        precio_referencial:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        foto:
+          type: string
+          format: uri
+          nullable: true
+        activo:
+          type: boolean
+        visible_publicamente:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedVehiculo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        cliente:
+          type: integer
+          readOnly: true
+        cliente_nombre:
+          type: string
+          readOnly: true
+        modelo_vehiculo:
+          type: integer
+        modelo_nombre:
+          type: string
+          readOnly: true
+        marca_nombre:
+          type: string
+          readOnly: true
+        placa:
+          type: string
+          maxLength: 15
+        anio:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        color:
+          type: string
+          maxLength: 50
+        kilometraje_actual:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        numero_chasis:
+          type: string
+          nullable: true
+          maxLength: 50
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+    PerfilCliente:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          allOf:
+          - $ref: '#/components/schemas/UsuarioResumen'
+          readOnly: true
+        identificacion:
+          type: string
+          nullable: true
+          maxLength: 20
+        telefono:
+          type: string
+          maxLength: 20
+        direccion:
+          type: string
+          maxLength: 255
+        activo:
+          type: boolean
+          readOnly: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - activo
+      - actualizado_en
+      - creado_en
+      - id
+      - usuario
+    RecomendacionMantenimiento:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        vehiculo:
+          type: integer
+        vehiculo_placa:
+          type: string
+          readOnly: true
+        orden_origen:
+          type: integer
+          nullable: true
+        orden_numero:
+          type: string
+          readOnly: true
+        servicio:
+          type: integer
+          nullable: true
+        servicio_nombre:
+          type: string
+          readOnly: true
+        empleado:
+          type: integer
+          readOnly: true
+          nullable: true
+        empleado_nombre:
+          type: string
+          readOnly: true
+        titulo:
+          type: string
+          maxLength: 150
+        descripcion:
+          type: string
+        fecha_recomendada:
+          type: string
+          format: date
+          nullable: true
+        kilometraje_recomendado:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          nullable: true
+        estado:
+          $ref: '#/components/schemas/RecomendacionMantenimientoEstadoEnum'
+        estado_display:
+          type: string
+          readOnly: true
+        fecha_realizacion:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        visible_cliente:
+          type: boolean
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actualizado_en
+      - creado_en
+      - empleado
+      - empleado_nombre
+      - estado_display
+      - fecha_realizacion
+      - id
+      - orden_numero
+      - servicio_nombre
+      - titulo
+      - vehiculo
+      - vehiculo_placa
+    RecomendacionMantenimientoEstadoEnum:
+      enum:
+      - PENDIENTE
+      - COMPLETADA
+      - CANCELADA
+      type: string
+      description: |-
+        * `PENDIENTE` - Pendiente
+        * `COMPLETADA` - Completada
+        * `CANCELADA` - Cancelada
+    RegistroCliente:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: Nombre de usuario
+          description: 'Requerido. 150 carácteres como máximo. Únicamente letras,
+            dígitos y @/./+/-/_ '
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Correo electrónico
+          maxLength: 254
+        first_name:
+          type: string
+          title: Nombre
+          maxLength: 150
+        last_name:
+          type: string
+          title: Apellidos
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        password_confirmacion:
+          type: string
+          writeOnly: true
+        identificacion:
+          type: string
+          nullable: true
+        telefono:
+          type: string
+        direccion:
+          type: string
+      required:
+      - email
+      - id
+      - password
+      - password_confirmacion
+      - username
+    RolEnum:
+      enum:
+      - ADMIN
+      - EMPLEADO
+      - CLIENTE
+      type: string
+      description: |-
+        * `ADMIN` - Administrador
+        * `EMPLEADO` - Empleado
+        * `CLIENTE` - Cliente
+    Servicio:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 120
+        descripcion:
+          type: string
+        precio_referencial:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        foto:
+          type: string
+          format: uri
+          nullable: true
+        activo:
+          type: boolean
+        visible_publicamente:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actualizado_en
+      - creado_en
+      - id
+      - nombre
+    TipoVehiculoEnum:
+      enum:
+      - AUTOMOVIL
+      - SUV
+      - CAMIONETA
+      - CAMION
+      - MOTOCICLETA
+      - FURGONETA
+      - OTRO
+      type: string
+      description: |-
+        * `AUTOMOVIL` - Automóvil
+        * `SUV` - SUV
+        * `CAMIONETA` - Camioneta
+        * `CAMION` - Camión
+        * `MOTOCICLETA` - Motocicleta
+        * `FURGONETA` - Furgoneta
+        * `OTRO` - Otro
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    TokenVerify:
+      type: object
+      properties:
+        token:
+          type: string
+          writeOnly: true
+      required:
+      - token
+    UsuarioResumen:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          title: Nombre de usuario
+          description: 'Requerido. 150 carácteres como máximo. Únicamente letras,
+            dígitos y @/./+/-/_ '
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Correo electrónico
+        first_name:
+          type: string
+          readOnly: true
+          title: Nombre
+        last_name:
+          type: string
+          readOnly: true
+          title: Apellidos
+        nombre_completo:
+          type: string
+          readOnly: true
+        rol:
+          allOf:
+          - $ref: '#/components/schemas/RolEnum'
+          readOnly: true
+      required:
+      - email
+      - first_name
+      - id
+      - last_name
+      - nombre_completo
+      - rol
+      - username
+    Vehiculo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        cliente:
+          type: integer
+          readOnly: true
+        cliente_nombre:
+          type: string
+          readOnly: true
+        modelo_vehiculo:
+          type: integer
+        modelo_nombre:
+          type: string
+          readOnly: true
+        marca_nombre:
+          type: string
+          readOnly: true
+        placa:
+          type: string
+          maxLength: 15
+        anio:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        color:
+          type: string
+          maxLength: 50
+        kilometraje_actual:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        numero_chasis:
+          type: string
+          nullable: true
+          maxLength: 50
+        activo:
+          type: boolean
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actualizado_en
+      - anio
+      - cliente
+      - cliente_nombre
+      - creado_en
+      - id
+      - marca_nombre
+      - modelo_nombre
+      - modelo_vehiculo
+      - placa
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
