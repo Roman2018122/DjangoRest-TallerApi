@@ -116,8 +116,17 @@ jobs:
 
             echo "── 6. Verificando despliegue ──"
             sleep 3
-            curl -sf http://127.0.0.1/admin/login/ > /dev/null
 
-            echo "Despliegue completado exitosamente"
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+              http://127.0.0.1/api/)
+
+            echo "Código HTTP recibido: $HTTP_STATUS"
+
+            if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "401" ]; then
+              echo "API funcionando correctamente"
+            else
+              echo "La API respondió con un estado inesperado"
+              exit 1
+            fi
 
           ENDSSH
