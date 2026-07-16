@@ -1,0 +1,121 @@
+# .github/workflows/deploy.yml
+name: Torres Taller API — CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+
+  # ── Job 1: Tests ──────────────────────────────────────────
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: taller_test_db
+          POSTGRES_USER: taller_test_user
+          POSTGRES_PASSWORD: taller_test_pass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Run tests
+        env:
+          SECRET_KEY: test-secret-key-for-ci-only
+          DEBUG: "True"
+          ALLOWED_HOSTS: localhost,127.0.0.1
+          DB_NAME: taller_test_db
+          DB_USER: taller_test_user
+          DB_PASSWORD: taller_test_pass
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          TEST_DB_NAME: taller_test_db
+          CORS_ALLOW_ALL_ORIGINS: "True"
+        run: uv run python manage.py test api --verbosity=2
+
+  # ── Job 2: Deploy ─────────────────────────────────────────
+  deploy:
+    name: Deploy to DigitalOcean
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy to VM
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USERNAME }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+
+        run: |
+          ssh -i ~/.ssh/id_ed25519 \
+            -o IdentitiesOnly=yes \
+            "$VPS_USER@$VPS_HOST" \
+            "DEPLOY_PATH='$DEPLOY_PATH' bash -s" << 'ENDSSH'
+
+            set -e
+
+            export PATH="/root/.local/bin:$PATH"
+
+            echo "── 1. Actualizando código ──"
+            cd "$DEPLOY_PATH"
+            git fetch origin
+            git reset --hard origin/master
+
+            echo "── 2. Instalando dependencias ──"
+            uv sync --locked
+
+            echo "── 3. Aplicando migraciones ──"
+            uv run python manage.py migrate --noinput
+
+            echo "── 4. Recolectando estáticos ──"
+            uv run python manage.py collectstatic --noinput
+
+            echo "── 5. Reiniciando servicios ──"
+            systemctl restart gunicorn-taller
+            nginx -t
+            systemctl reload nginx
+
+            echo "── 6. Verificando despliegue ──"
+            sleep 3
+            curl -sf http://127.0.0.1/admin/login/ > /dev/null
+
+            echo "Despliegue completado exitosamente"
+
+          ENDSSH
