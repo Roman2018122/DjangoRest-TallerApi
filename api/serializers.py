@@ -1732,3 +1732,29 @@ class SeguimientoOrdenSerializer(serializers.ModelSerializer):
             many=True,
             context=self.context,
         ).data    
+    
+## Me permite ver el tipo de usuario autenticado 
+class UsuarioAutenticadoSerializer(serializers.ModelSerializer):
+    nombre_completo = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Usuario
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "nombre_completo",
+            "rol",
+        ]
+        read_only_fields = fields
+
+    def get_nombre_completo(self, obj):
+        nombre_completo = obj.get_full_name().strip()
+
+        if nombre_completo:
+            return nombre_completo
+
+        return obj.username
+    

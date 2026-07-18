@@ -10,6 +10,8 @@ from django.utils import timezone
 from rest_framework.decorators import action
 from rest_framework import status
 
+from rest_framework.views import APIView
+from django.db.models import Q
 
 from rest_framework.exceptions import (
     PermissionDenied,
@@ -56,13 +58,14 @@ from .serializers import (
     VehiculoSerializer,
     HistorialVehiculoSerializer,
     SeguimientoOrdenSerializer,
+    UsuarioAutenticadoSerializer
 )
 
 class RegistroClienteView(generics.CreateAPIView):
     serializer_class = RegistroClienteSerializer
     permission_classes = [AllowAny]
 
-
+## Permite ver el peffil de usuario personalizado cliente
 class MiPerfilClienteView(generics.RetrieveUpdateAPIView):
     serializer_class = PerfilClienteSerializer
     permission_classes = [IsAuthenticated]
@@ -85,7 +88,57 @@ class MiPerfilClienteView(generics.RetrieveUpdateAPIView):
             raise NotFound(
                 "El usuario autenticado no tiene un perfil de cliente."
             )
+        
+class DashboardClienteView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        usuario = request.user
+
+        if usuario.rol != "CLIENTE":
+            raise PermissionDenied(
+                "Este recurso es exclusivo para clientes."
+            )
+
+        cliente = usuario.cliente
+
+        data = {
+            "vehiculos": Vehiculo.objects.filter(
+                cliente=cliente
+            ).count(),
+
+            "citas_pendientes": Cita.objects.filter(
+                cliente=cliente,
+                estado__in=[
+                    Cita.Estado.SOLICITADA,
+                    Cita.Estado.CONFIRMADA,
+                    Cita.Estado.REPROGRAMADA,
+                ],
+            ).count(),
+
+            "ordenes_activas": OrdenTrabajo.objects.filter(
+                vehiculo__cliente=cliente,
+            ).exclude(
+                estado__in=[
+                    OrdenTrabajo.Estado.ENTREGADO,
+                    OrdenTrabajo.Estado.CANCELADO,
+                ]
+            ).count(),
+
+            "diagnosticos_pendientes": Diagnostico.objects.filter(
+                orden__vehiculo__cliente=cliente,
+                estado_respuesta=Diagnostico.EstadoRespuesta.PENDIENTE,
+                visible_cliente=True,
+            ).count(),
+
+            "recomendaciones_pendientes": RecomendacionMantenimiento.objects.filter(
+                vehiculo__cliente=cliente,
+                estado=RecomendacionMantenimiento.Estado.PENDIENTE,
+                visible_cliente=True,
+            ).count(),
+        }
+
+        return Response(data)
 
 
 class ClienteViewSet(viewsets.ModelViewSet):
@@ -1442,3 +1495,12 @@ class RecomendacionMantenimientoViewSet(
             ).data,
             status=status.HTTP_200_OK,
         )
+
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UsuarioAutenticadoSerializer(request.user)
+
+        return Response(serializer.data)

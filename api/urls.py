@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from drf_spectacular.views import (
@@ -23,6 +23,8 @@ from .views import (
     DiagnosticoViewSet,  
     DetalleServicioOrdenViewSet,
     RecomendacionMantenimientoViewSet,
+    DashboardClienteView,
+    MeView
 )
 
 router = DefaultRouter()
@@ -115,6 +117,15 @@ urlpatterns = [
         "mi-perfil/",
         MiPerfilClienteView.as_view(),
         name="mi-perfil-cliente",
+    ),
+
+    path("me/", MeView.as_view(), name="me"),
+    path("", include(router.urls)),
+
+    path(
+        "dashboard/",
+        DashboardClienteView.as_view(),
+        name="dashboard-cliente",
     ),
 
     path(
