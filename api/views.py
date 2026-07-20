@@ -614,7 +614,9 @@ class CitaViewSet(viewsets.ModelViewSet):
 
         if cita.estado not in {
             Cita.Estado.SOLICITADA,
+            Cita.Estado.CONFIRMADA,
             Cita.Estado.REPROGRAMADA,
+
         }:
             return Response(
                 {
