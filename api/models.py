@@ -35,9 +35,6 @@ def validar_anio_vehiculo(value: int) -> None:
 class Usuario(AbstractUser):
     """
     Usuario personalizado para autenticación y control de acceso.
-
-    Se conserva username como campo de inicio de sesión para simplificar
-    la primera versión del proyecto.
     """
 
     class Rol(models.TextChoices):
@@ -478,6 +475,10 @@ class Cita(models.Model):
     respuesta_taller = models.TextField(
         blank=True,
     )
+    motivo_cancelacion = models.TextField(
+        blank=True,
+    )
+    
     estado = models.CharField(
         max_length=20,
         choices=Estado.choices,

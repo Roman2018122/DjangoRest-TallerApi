@@ -353,6 +353,7 @@ class ServicioSerializer(serializers.ModelSerializer):
 
         return nombre
     
+##SERIALIZERS QUE PERMITEN LA COMUNICACIONENTRE LA CITA DEL CLIENTE Y LA RESPUESTA DEL TALLER 
 
 class CitaSerializer(serializers.ModelSerializer):
     cliente = serializers.PrimaryKeyRelatedField(
@@ -386,10 +387,12 @@ class CitaSerializer(serializers.ModelSerializer):
             "motivo",
             "observaciones_cliente",
             "respuesta_taller",
+            "motivo_cancelacion",
             "estado",
             "estado_display",
             "creado_en",
             "actualizado_en",
+            
         )
         read_only_fields = (
             "cliente",
@@ -438,6 +441,49 @@ class CitaSerializer(serializers.ModelSerializer):
             )
 
         return servicio
+    
+class ResponderCitaSerializer(serializers.Serializer):
+    estado = serializers.ChoiceField(
+        choices=[
+            Cita.Estado.CONFIRMADA,
+            Cita.Estado.REPROGRAMADA,
+        ]
+    )
+
+    respuesta_taller = serializers.CharField()
+
+    fecha_solicitada = serializers.DateTimeField(
+        required=False,
+    )
+
+    def validate(self, attrs):
+        estado = attrs["estado"]
+
+        if (
+            estado == Cita.Estado.REPROGRAMADA
+            and "fecha_solicitada" not in attrs
+        ):
+            raise serializers.ValidationError(
+                {
+                    "fecha_solicitada":
+                    "Debe indicar una nueva fecha."
+                }
+            )
+
+        return attrs
+    
+class CancelarCitaSerializer(serializers.Serializer):
+    motivo_cancelacion = serializers.CharField(
+        required=False,
+        allow_blank=True,
+    )
+
+class RegistrarAsistenciaSerializer(
+    serializers.Serializer
+):
+    asistio = serializers.BooleanField()
+
+
     
 ##ESPECIALIDAD
 class EspecialidadSerializer(serializers.ModelSerializer):

@@ -58,7 +58,13 @@ from .serializers import (
     VehiculoSerializer,
     HistorialVehiculoSerializer,
     SeguimientoOrdenSerializer,
-    UsuarioAutenticadoSerializer
+    UsuarioAutenticadoSerializer,
+
+
+    ResponderCitaSerializer,
+    CancelarCitaSerializer,
+    RegistrarAsistenciaSerializer,
+
 )
 
 class RegistroClienteView(generics.CreateAPIView):
@@ -385,6 +391,16 @@ class CitaViewSet(viewsets.ModelViewSet):
         "estado",
     ]
     ordering = ["-fecha_solicitada"]
+    ROLES_PERSONAL_TALLER = {
+        "ADMIN",
+        "EMPLEADO",
+    }
+
+    def es_personal_taller(self, usuario):
+        return (
+            usuario.is_superuser
+            or usuario.rol in self.ROLES_PERSONAL_TALLER
+        )
 
     def get_queryset(self):
         queryset = Cita.objects.select_related(
@@ -494,24 +510,364 @@ class CitaViewSet(viewsets.ModelViewSet):
 
         return super().update(request, *args, **kwargs)
 
+##Impide que la cita pueda ser eliminada solo puede ser cancelada 
+
     def destroy(self, request, *args, **kwargs):
+        if request.user.rol == "CLIENTE":
+            return Response(
+                {
+                    "detail": (
+                        "Las citas no se eliminan. "
+                        "Utilice la opción cancelar."
+                    )
+                },
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            )
+
+        return super().destroy(
+            request,
+            *args,
+            **kwargs,
+        )
+    
+    ##Permite al usuario cliente cancelar la cita 
+    
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="cancelar",
+        permission_classes=[IsAuthenticated],
+    )
+    def cancelar(self, request, pk=None):
         cita = self.get_object()
 
-        if request.user.rol == "CLIENTE":
-            if cita.estado not in {
-                Cita.Estado.SOLICITADA,
-                Cita.Estado.REPROGRAMADA,
-            }:
-                return Response(
-                    {
-                        "detail": (
-                            "La cita ya no puede eliminarse en su estado actual."
-                        )
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+        if cita.estado not in {
+            Cita.Estado.SOLICITADA,
+            Cita.Estado.CONFIRMADA,
+            Cita.Estado.REPROGRAMADA,
+        }:
+            return Response(
+                {
+                    "detail": (
+                        "La cita no puede cancelarse "
+                        "en su estado actual."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        return super().destroy(request, *args, **kwargs)    
+        serializer = CancelarCitaSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        cita.estado = Cita.Estado.CANCELADA
+        cita.motivo_cancelacion = (
+            serializer.validated_data.get(
+                "motivo_cancelacion",
+                "",
+            )
+        )
+
+        cita.save(
+            update_fields=[
+                "estado",
+                "motivo_cancelacion",
+                "actualizado_en",
+            ]
+        )
+
+        return Response(
+            CitaSerializer(
+                cita,
+                context={
+                    "request": request,
+                },
+            ).data,
+            status=status.HTTP_200_OK,
+        )
+
+    ##Respuesta de citas solo personal del taller puede hacerlo 
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="responder",
+        permission_classes=[IsAuthenticated],
+    )
+    def responder(self, request, pk=None):
+        if not self.es_personal_taller(
+            request.user
+        ):
+            return Response(
+                {
+                    "detail": (
+                        "No tiene permiso para responder citas."
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        cita = self.get_object()
+
+        if cita.estado not in {
+            Cita.Estado.SOLICITADA,
+            Cita.Estado.REPROGRAMADA,
+        }:
+            return Response(
+                {
+                    "detail": (
+                        "La cita no puede confirmarse "
+                        "ni reprogramarse en su estado actual."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = ResponderCitaSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        estado = serializer.validated_data[
+            "estado"
+        ]
+
+        cita.estado = estado
+        cita.respuesta_taller = (
+            serializer.validated_data[
+                "respuesta_taller"
+            ]
+        )
+
+        update_fields = [
+            "estado",
+            "respuesta_taller",
+            "actualizado_en",
+        ]
+
+        if estado == Cita.Estado.REPROGRAMADA:
+            cita.fecha_solicitada = (
+                serializer.validated_data[
+                    "fecha_solicitada"
+                ]
+            )
+            update_fields.append(
+                "fecha_solicitada"
+            )
+
+        cita.save(
+            update_fields=update_fields,
+        )
+
+        return Response(
+            CitaSerializer(
+                cita,
+                context={
+                    "request": request,
+                },
+            ).data,
+            status=status.HTTP_200_OK,
+        )
+    
+##Registrar asistencia del cliente a la cita 
+
+    @action(
+    detail=True,
+    methods=["post"],
+    url_path="registrar-asistencia",
+    permission_classes=[IsAuthenticated],
+    )
+    def registrar_asistencia(self, request, pk=None):
+        if not self.es_personal_taller(request.user):
+            return Response(
+                {
+                    "detail": (
+                        "No tiene permiso para registrar "
+                        "la asistencia."
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        cita = self.get_object()
+
+        if cita.estado not in {
+            Cita.Estado.CONFIRMADA,
+            Cita.Estado.REPROGRAMADA,
+        }:
+            return Response(
+                {
+                    "detail": (
+                        "Solo se puede registrar la asistencia "
+                        "de una cita confirmada o reprogramada."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = RegistrarAsistenciaSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        asistio = serializer.validated_data["asistio"]
+
+        if asistio:
+            cita.estado = Cita.Estado.ATENDIDA
+        else:
+            cita.estado = Cita.Estado.NO_ASISTIO
+
+        cita.save(
+            update_fields=[
+                "estado",
+                "actualizado_en",
+            ]
+        )
+
+        return Response(
+            CitaSerializer(
+                cita,
+                context={
+                    "request": request,
+                },
+            ).data,
+            status=status.HTTP_200_OK,
+        )
+    ##Crear orden de reparacion
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="crear-orden",
+        permission_classes=[IsAuthenticated],
+    )
+
+    @transaction.atomic
+    def crear_orden(
+        self,
+        request,
+        pk=None,
+    ):
+        if not self.es_personal_taller(
+            request.user
+        ):
+            return Response(
+                {
+                    "detail": (
+                        "No tiene permiso para crear "
+                        "órdenes de trabajo."
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        cita = self.get_object()
+
+        if cita.estado != Cita.Estado.ATENDIDA:
+            return Response(
+                {
+                    "detail": (
+                        "Solo se puede crear una orden "
+                        "desde una cita atendida."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        orden_existente = (
+            OrdenTrabajo.objects.filter(
+                cita=cita,
+            ).first()
+        )
+
+        if orden_existente:
+            orden_serializer = (
+                OrdenTrabajoSerializer(
+                    orden_existente,
+                    context={
+                        "request": request,
+                    },
+                )
+            )
+
+            return Response(
+                {
+                    "detail": (
+                        "La cita ya tiene una orden "
+                        "de trabajo asociada."
+                    ),
+                    "orden": orden_serializer.data,
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        try:
+            empleado_recepciona = (
+                Empleado.objects.get(
+                    usuario=request.user,
+                    activo=True,
+                )
+            )
+        except Empleado.DoesNotExist:
+            return Response(
+                {
+                    "detail": (
+                        "El usuario autenticado no tiene "
+                        "un perfil de empleado activo."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        datos_orden = request.data.copy()
+
+        datos_orden["vehiculo"] = (
+            cita.vehiculo_id
+        )
+        datos_orden["cita"] = cita.id
+        datos_orden["empleado_recepciona"] = (
+            empleado_recepciona.id
+        )
+        datos_orden["estado"] = (
+            OrdenTrabajo.Estado.RECIBIDO
+        )
+
+        if not datos_orden.get(
+            "motivo_ingreso"
+        ):
+            datos_orden["motivo_ingreso"] = (
+                cita.motivo
+            )
+
+        serializer = OrdenTrabajoSerializer(
+            data=datos_orden,
+            context={
+                "request": request,
+            },
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        orden = serializer.save()
+
+        return Response(
+            OrdenTrabajoSerializer(
+                orden,
+                context={
+                    "request": request,
+                },
+            ).data,
+            status=status.HTTP_201_CREATED,
+    )
     
 
 
@@ -1453,6 +1809,8 @@ class RecomendacionMantenimientoViewSet(
             ).data,
             status=status.HTTP_200_OK,
         )
+
+
 
     @action(
         detail=True,
