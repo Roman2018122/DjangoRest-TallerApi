@@ -61,10 +61,16 @@ class IsOwnerOrWorkshopStaff(BasePermission):
             return True
 
         if hasattr(obj, "cliente"):
-            cliente = obj.cliente
+            return obj.cliente.usuario_id == usuario.id
 
-            if hasattr(cliente, "usuario_id"):
-                return cliente.usuario_id == usuario.id
+        if hasattr(obj, "vehiculo"):
+            return obj.vehiculo.cliente.usuario_id == usuario.id
+
+        if hasattr(obj, "orden"):
+            return (
+                obj.orden.vehiculo.cliente.usuario_id
+                == usuario.id
+            )
 
         if isinstance(obj, Cliente):
             return obj.usuario_id == usuario.id

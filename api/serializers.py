@@ -105,8 +105,11 @@ class RegistroClienteSerializer(serializers.ModelSerializer):
 
         Cliente.objects.create(
             usuario=usuario,
+            nombres=usuario.first_name.strip(),
+            apellidos=usuario.last_name.strip(),
             identificacion=identificacion or None,
             telefono=telefono,
+            email=usuario.email.strip().lower(),
             direccion=direccion,
         )
 
@@ -142,8 +145,11 @@ class PerfilClienteSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "usuario",
+            "nombres",
+            "apellidos",
             "identificacion",
             "telefono",
+            "email",
             "direccion",
             "activo",
             "creado_en",
@@ -157,7 +163,45 @@ class PerfilClienteSerializer(serializers.ModelSerializer):
             "actualizado_en",
         )
 
+    def validate_email(self, value):
+        return value.strip().lower()
 
+    def validate_telefono(self, value):
+        telefono = value.strip()
+
+        if telefono and not all(
+            caracter.isdigit() or caracter in "+- "
+            for caracter in telefono
+        ):
+            raise serializers.ValidationError(
+                "El teléfono contiene caracteres no permitidos."
+            )
+
+        return telefono
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        instance = super().update(
+            instance,
+            validated_data,
+        )
+
+        if instance.usuario_id:
+            usuario = instance.usuario
+            usuario.first_name = instance.nombres
+            usuario.last_name = instance.apellidos
+            usuario.email = instance.email
+
+            usuario.save(
+                update_fields=[
+                    "first_name",
+                    "last_name",
+                    "email",
+                ]
+            )
+
+        return instance
+    
 class ClienteSerializer(serializers.ModelSerializer):
     usuario_detalle = UsuarioResumenSerializer(
         source="usuario",
@@ -170,8 +214,11 @@ class ClienteSerializer(serializers.ModelSerializer):
             "id",
             "usuario",
             "usuario_detalle",
+            "nombres",
+            "apellidos",
             "identificacion",
             "telefono",
+            "email",
             "direccion",
             "activo",
             "creado_en",
@@ -181,11 +228,28 @@ class ClienteSerializer(serializers.ModelSerializer):
             "creado_en",
             "actualizado_en",
         )
+        extra_kwargs = {
+            "usuario": {
+                "required": False,
+                "allow_null": True,
+            },
+        }
 
     def validate_usuario(self, usuario):
+        if usuario is None:
+            return usuario
+                    
         if usuario.rol != Usuario.Rol.CLIENTE:
             raise serializers.ValidationError(
                 "El usuario seleccionado debe tener el rol CLIENTE."
+            )
+        cliente_actual = getattr(self, "instance", None)
+
+        if Cliente.objects.filter(usuario=usuario).exclude(
+            pk=getattr(cliente_actual, "pk", None)
+        ).exists():
+            raise serializers.ValidationError(
+                "Este usuario ya está asociado a otro cliente."
             )
 
         return usuario
@@ -729,6 +793,19 @@ class DetalleServicioOrdenSerializer(
             "orden",
             getattr(instance, "orden", None),
         )
+        if (
+            instance
+            and "orden" in attrs
+            and attrs["orden"].pk != instance.orden_id
+        ):
+            raise serializers.ValidationError(
+                {
+                    "orden": (
+                        "No se puede cambiar la orden de un "
+                        "servicio ya registrado."
+                    )
+                }
+            )
 
         diagnostico = attrs.get(
             "diagnostico",
@@ -882,6 +959,7 @@ class OrdenTrabajoSerializer(serializers.ModelSerializer):
 
         read_only_fields = (
             "numero_orden",
+            "subtotal",
             "total",
             "historial_estados",
             "creado_en",
@@ -908,7 +986,26 @@ class OrdenTrabajoSerializer(serializers.ModelSerializer):
             "vehiculo",
             getattr(instance, "vehiculo", None),
         )
+        if instance is None and vehiculo:
+            if not vehiculo.activo:
+                raise serializers.ValidationError(
+                    {
+                        "vehiculo": (
+                            "No se puede crear una orden para "
+                            "un vehículo inactivo."
+                        )
+                    }
+                )
 
+            if not vehiculo.cliente.activo:
+                raise serializers.ValidationError(
+                    {
+                        "vehiculo": (
+                            "No se puede crear una orden porque "
+                            "el cliente está inactivo."
+                        )
+                    }
+                )
         cita = attrs.get(
             "cita",
             getattr(instance, "cita", None),
@@ -967,6 +1064,25 @@ class OrdenTrabajoSerializer(serializers.ModelSerializer):
                     )
                 }
             )
+        if cita:
+            ordenes_con_cita = OrdenTrabajo.objects.filter(
+                cita=cita,
+            )
+
+            if instance:
+                ordenes_con_cita = ordenes_con_cita.exclude(
+                    pk=instance.pk,
+                )
+
+            if ordenes_con_cita.exists():
+                raise serializers.ValidationError(
+                    {
+                        "cita": (
+                            "La cita seleccionada ya tiene "
+                            "una orden de trabajo."
+                        )
+                    }
+                )
 
         if (
             empleado_recepciona
@@ -1099,13 +1215,10 @@ class DiagnosticoSerializer(serializers.ModelSerializer):
         return obj.empleado.nombre_completo
 
     def validate_orden(self, orden):
-        if orden.estado in {
-            OrdenTrabajo.Estado.ENTREGADO,
-            OrdenTrabajo.Estado.CANCELADO,
-        }:
+        if orden.estado != OrdenTrabajo.Estado.EN_REVISION:
             raise serializers.ValidationError(
-                "No se pueden agregar diagnósticos a una orden "
-                "entregada o cancelada."
+                "Solo se pueden registrar diagnósticos cuando "
+                "la orden está en revisión."
             )
 
         return orden
@@ -1129,7 +1242,24 @@ class DiagnosticoSerializer(serializers.ModelSerializer):
             )
 
         return descripcion
+    def validate(self, attrs):
+        instance = self.instance
 
+        if (
+            instance
+            and "orden" in attrs
+            and attrs["orden"].pk != instance.orden_id
+        ):
+            raise serializers.ValidationError(
+                {
+                    "orden": (
+                        "No se puede cambiar la orden de un "
+                        "diagnóstico ya registrado."
+                    )
+                }
+            )
+
+        return attrs
 
 class RespuestaDiagnosticoSerializer(serializers.Serializer):
     respuesta = serializers.ChoiceField(
@@ -1200,6 +1330,7 @@ class RecomendacionMantenimientoSerializer(
 
         read_only_fields = (
             "empleado",
+            "estado",
             "fecha_realizacion",
             "creado_en",
             "actualizado_en",
@@ -1228,11 +1359,38 @@ class RecomendacionMantenimientoSerializer(
             "vehiculo",
             getattr(instance, "vehiculo", None),
         )
+        if (
+            instance
+            and "vehiculo" in attrs
+            and attrs["vehiculo"].pk != instance.vehiculo_id
+        ):
+            raise serializers.ValidationError(
+                {
+                    "vehiculo": (
+                        "No se puede cambiar el vehículo de una "
+                        "recomendación ya registrada."
+                    )
+                }
+            )
 
         orden_origen = attrs.get(
             "orden_origen",
             getattr(instance, "orden_origen", None),
         )
+
+        if (
+            instance
+            and "orden_origen" in attrs
+            and attrs["orden_origen"] != instance.orden_origen
+        ):
+            raise serializers.ValidationError(
+                {
+                    "orden_origen": (
+                        "No se puede cambiar la orden de origen de "
+                        "una recomendación ya registrada."
+                    )
+                }
+            )
 
         fecha_recomendada = attrs.get(
             "fecha_recomendada",
@@ -1242,15 +1400,6 @@ class RecomendacionMantenimientoSerializer(
         kilometraje_recomendado = attrs.get(
             "kilometraje_recomendado",
             getattr(instance, "kilometraje_recomendado", None),
-        )
-
-        estado = attrs.get(
-            "estado",
-            getattr(
-                instance,
-                "estado",
-                RecomendacionMantenimiento.Estado.PENDIENTE,
-            ),
         )
 
         if not fecha_recomendada and not kilometraje_recomendado:
@@ -1291,9 +1440,6 @@ class RecomendacionMantenimientoSerializer(
                     )
                 }
             )
-
-        if estado == RecomendacionMantenimiento.Estado.COMPLETADA:
-            attrs["fecha_realizacion"] = timezone.now()
 
         return attrs
     
@@ -1353,8 +1499,10 @@ class OrdenHistorialVehiculoSerializer(serializers.ModelSerializer):
             and request.user.is_authenticated
             and request.user.rol == Usuario.Rol.CLIENTE
         ):
-            diagnosticos = diagnosticos.filter(
-                visible_cliente=True,
+            diagnosticos = (
+                obj.diagnosticos
+                .filter(activo=True)
+                .order_by("creado_en")
             )
 
         return DiagnosticoSerializer(
@@ -1366,11 +1514,15 @@ class OrdenHistorialVehiculoSerializer(serializers.ModelSerializer):
     def get_servicios_realizados(self, obj):
         request = self.context.get("request")
 
-        detalles = obj.detalles_servicios.exclude(
-            estado__in=[
-                DetalleServicioOrden.Estado.RECHAZADO,
-                DetalleServicioOrden.Estado.CANCELADO,
-            ],
+        detalles = (
+            obj.detalles_servicios
+            .exclude(
+                estado__in=[
+                    DetalleServicioOrden.Estado.RECHAZADO,
+                    DetalleServicioOrden.Estado.CANCELADO,
+                ],
+            )
+            .order_by("creado_en")
         )
 
         if (
@@ -1487,6 +1639,8 @@ class HistorialVehiculoSerializer(serializers.ModelSerializer):
         ).data
 
     def get_resumen(self, obj):
+        request = self.context.get("request")
+
         ordenes_entregadas = obj.ordenes.filter(
             estado=OrdenTrabajo.Estado.ENTREGADO,
             activo=True,
@@ -1497,19 +1651,25 @@ class HistorialVehiculoSerializer(serializers.ModelSerializer):
             "-fecha_ingreso",
         ).first()
 
-        proxima_recomendacion = (
-            obj.recomendaciones_mantenimiento
-            .filter(
-                estado=RecomendacionMantenimiento.Estado.PENDIENTE,
-                activo=True,
-            )
-            .order_by(
-                "fecha_recomendada",
-                "kilometraje_recomendado",
-                "creado_en",
-            )
-            .first()
+        recomendaciones = obj.recomendaciones_mantenimiento.filter(
+            estado=RecomendacionMantenimiento.Estado.PENDIENTE,
+            activo=True,
         )
+
+        if (
+            request
+            and request.user.is_authenticated
+            and request.user.rol == Usuario.Rol.CLIENTE
+        ):
+            recomendaciones = recomendaciones.filter(
+                visible_cliente=True,
+            )
+
+        proxima_recomendacion = recomendaciones.order_by(
+            "fecha_recomendada",
+            "kilometraje_recomendado",
+            "creado_en",
+        ).first()
 
         return {
             "total_mantenimientos": ordenes_entregadas.count(),

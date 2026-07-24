@@ -155,20 +155,29 @@ class ClienteViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter,
     ]
     search_fields = [
+        "nombres",
+        "apellidos",
+        "identificacion",
+        "telefono",
+        "email",
         "usuario__username",
         "usuario__first_name",
         "usuario__last_name",
         "usuario__email",
-        "identificacion",
-        "telefono",
     ]
     ordering_fields = [
         "id",
+        "nombres",
+        "apellidos",
+        "identificacion",
         "creado_en",
+        "actualizado_en",
         "usuario__first_name",
     ]
-    ordering = ["id"]
-
+    ordering = [
+        "nombres",
+        "apellidos",
+    ]
     def get_queryset(self):
         return Cliente.objects.select_related(
             "usuario",
@@ -239,6 +248,11 @@ class VehiculoViewSet(viewsets.ModelViewSet):
         "numero_chasis",
         "modelo_vehiculo__nombre",
         "modelo_vehiculo__marca__nombre",
+        "cliente__nombres",
+        "cliente__apellidos",
+        "cliente__identificacion",
+        "cliente__telefono",
+        "cliente__email",
         "cliente__usuario__first_name",
         "cliente__usuario__last_name",
     ]
@@ -299,12 +313,15 @@ class VehiculoViewSet(viewsets.ModelViewSet):
             )
 
         try:
-            cliente = Cliente.objects.get(pk=cliente_id)
+            cliente = Cliente.objects.get(
+                pk=cliente_id,
+                activo=True,
+            )
         except Cliente.DoesNotExist:
             from rest_framework.exceptions import ValidationError
 
             raise ValidationError(
-                {"cliente": "El cliente indicado no existe."}
+                {"cliente": "El cliente indicado no existe o esta inactivo."}
             )
 
         serializer.save(cliente=cliente)
@@ -742,6 +759,7 @@ class CitaViewSet(viewsets.ModelViewSet):
             ).data,
             status=status.HTTP_200_OK,
         )
+    
     ##Crear orden de reparacion
 
     @action(
@@ -960,6 +978,12 @@ class OrdenTrabajoViewSet(viewsets.ModelViewSet):
         "vehiculo__cliente__usuario__last_name",
         "motivo_ingreso",
         "estado",
+
+        "vehiculo__cliente__nombres",
+        "vehiculo__cliente__apellidos",
+        "vehiculo__cliente__identificacion",
+        "vehiculo__cliente__telefono",
+        "vehiculo__cliente__email",
     ]
 
     ordering_fields = [
@@ -1068,6 +1092,35 @@ class OrdenTrabajoViewSet(viewsets.ModelViewSet):
             "estado",
             estado_anterior,
         )
+        transiciones_permitidas = {
+            OrdenTrabajo.Estado.RECIBIDO: {
+                OrdenTrabajo.Estado.EN_REVISION,
+                OrdenTrabajo.Estado.CANCELADO,
+            },
+            OrdenTrabajo.Estado.EN_REVISION: {
+                OrdenTrabajo.Estado.ESPERANDO_AUTORIZACION,
+                OrdenTrabajo.Estado.EN_REPARACION,
+                OrdenTrabajo.Estado.CANCELADO,
+            },
+            OrdenTrabajo.Estado.ESPERANDO_AUTORIZACION: {
+                OrdenTrabajo.Estado.EN_REPARACION,
+                OrdenTrabajo.Estado.CANCELADO,
+            },
+            OrdenTrabajo.Estado.EN_REPARACION: {
+                OrdenTrabajo.Estado.EN_LAVADO,
+                OrdenTrabajo.Estado.LISTO,
+                OrdenTrabajo.Estado.CANCELADO,
+            },
+            OrdenTrabajo.Estado.EN_LAVADO: {
+                OrdenTrabajo.Estado.LISTO,
+                OrdenTrabajo.Estado.CANCELADO,
+            },
+            OrdenTrabajo.Estado.LISTO: {
+                OrdenTrabajo.Estado.ENTREGADO,
+            },
+            OrdenTrabajo.Estado.ENTREGADO: set(),
+            OrdenTrabajo.Estado.CANCELADO: set(),
+        }
 
         if estado_anterior == OrdenTrabajo.Estado.ENTREGADO:
             if estado_nuevo != estado_anterior:
@@ -1090,7 +1143,21 @@ class OrdenTrabajoViewSet(viewsets.ModelViewSet):
                         )
                     }
                 )
+        if estado_nuevo != estado_anterior:
+            estados_validos = transiciones_permitidas.get(
+                estado_anterior,
+                set(),
+            )
 
+            if estado_nuevo not in estados_validos:
+                raise ValidationError(
+                    {
+                        "estado": (
+                            f"No se permite cambiar el estado de "
+                            f"{estado_anterior} a {estado_nuevo}."
+                        )
+                    }
+                )
         serializer.save()
 
     def destroy(self, request, *args, **kwargs):
@@ -1330,6 +1397,19 @@ class DiagnosticoViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         diagnostico = self.get_object()
 
+        if diagnostico.orden.estado in {
+            OrdenTrabajo.Estado.ENTREGADO,
+            OrdenTrabajo.Estado.CANCELADO,
+        }:
+            raise ValidationError(
+                {
+                    "orden": (
+                        "No se puede modificar un diagnóstico de "
+                        "una orden entregada o cancelada."
+                    )
+                }
+            )
+
         if diagnostico.estado_respuesta in {
             Diagnostico.EstadoRespuesta.APROBADO,
             Diagnostico.EstadoRespuesta.RECHAZADO,
@@ -1347,6 +1427,19 @@ class DiagnosticoViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         diagnostico = self.get_object()
+        if diagnostico.orden.estado in {
+            OrdenTrabajo.Estado.ENTREGADO,
+            OrdenTrabajo.Estado.CANCELADO,
+        }:
+            return Response(
+                {
+                    "detail": (
+                        "No se puede eliminar un diagnóstico de "
+                        "una orden entregada o cancelada."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if diagnostico.estado_respuesta in {
             Diagnostico.EstadoRespuesta.APROBADO,
@@ -1552,9 +1645,11 @@ class DetalleServicioOrdenViewSet(
                 }
             )
 
-        serializer.save(
+        detalle = serializer.save(
             empleado=empleado,
         )
+
+        detalle.orden.recalcular_totales()
 
     def perform_update(self, serializer):
         detalle = self.get_object()
@@ -1572,31 +1667,39 @@ class DetalleServicioOrdenViewSet(
                 }
             )
 
-        serializer.save()
+        detalle_actualizado = serializer.save()
 
-    def destroy(self, request, *args, **kwargs):
-        detalle = self.get_object()
+        detalle_actualizado.orden.recalcular_totales()
 
-        if detalle.estado in {
-            DetalleServicioOrden.Estado.EN_PROCESO,
-            DetalleServicioOrden.Estado.COMPLETADO,
-        }:
-            return Response(
-                {
-                    "detail": (
-                        "No se puede eliminar un servicio "
-                        "en proceso o completado."
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
+        def destroy(self, request, *args, **kwargs):
+            detalle = self.get_object()
+
+            if detalle.estado in {
+                DetalleServicioOrden.Estado.EN_PROCESO,
+                DetalleServicioOrden.Estado.COMPLETADO,
+            }:
+                return Response(
+                    {
+                        "detail": (
+                            "No se puede eliminar un servicio "
+                            "en proceso o completado."
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            orden = detalle.orden
+
+            response = super().destroy(
+                request,
+                *args,
+                **kwargs,
             )
 
-        return super().destroy(
-            request,
-            *args,
-            **kwargs,
-        )
-    
+            orden.recalcular_totales()
+
+            return response
+        
 class RecomendacionMantenimientoViewSet(
     viewsets.ModelViewSet
 ):

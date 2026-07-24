@@ -71,17 +71,29 @@ class Usuario(AbstractUser):
 
 class Cliente(models.Model):
     """
-    Información específica del cliente del taller.
+    Información del cliente del taller.
 
-    Los nombres, apellidos, email y contraseña pertenecen a Usuario,
-    por lo que no se duplican aquí.
+    Un cliente puede estar relacionado con una cuenta de usuario
+    o existir únicamente como cliente presencial sin acceso al sistema.
     """
 
     usuario = models.OneToOneField(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="cliente",
+        null=True,
+        blank=True,
+
     )
+    nombres = models.CharField(
+        max_length=100,
+    )
+
+    apellidos = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
     identificacion = models.CharField(
         max_length=20,
         unique=True,
@@ -90,6 +102,9 @@ class Cliente(models.Model):
     )
     telefono = models.CharField(
         max_length=20,
+        blank=True,
+    )
+    email = models.EmailField(
         blank=True,
     )
     direccion = models.CharField(
@@ -101,7 +116,11 @@ class Cliente(models.Model):
     actualizado_en = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["usuario__first_name", "usuario__last_name"]
+        ordering = [
+            "nombres",
+            "apellidos",
+            "id",
+        ]
 
     def clean(self):
         if self.usuario_id and self.usuario.rol != Usuario.Rol.CLIENTE:
@@ -114,8 +133,17 @@ class Cliente(models.Model):
             )
 
     def __str__(self):
-        nombre = self.usuario.get_full_name().strip()
-        return nombre or self.usuario.username
+        nombre_completo = (
+            f"{self.nombres} {self.apellidos}"
+        ).strip()
+
+        if nombre_completo:
+            return nombre_completo
+
+        if self.identificacion:
+            return self.identificacion
+
+        return f"Cliente {self.pk}"
 
 
 class Marca(models.Model):
